@@ -1,0 +1,38 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# This is the top-most EditorConfig file
+root = true
+
+[*]
+# This one is trickier, git for windows does auto-crlf by default...
+#end_of_line = lf
+
+# Because that’s how the POSIX standard defines a *line* ;)
+insert_final_newline = true
+
+[*.php]
+# Set default charset
+charset = utf-8
+
+# Indent using spaces instead of tabs, PSR-2
+indent_style = space
+
+# Use four spaces for `tab` width, PSR-2
+indent_size = 4
+
+# House-keeping
+trim_trailing_whitespace = true
+
+[*.yml]
+# Indent using spaces instead of tabs, PSR-2
+indent_style = space
+
+# Use four spaces for `tab` width, PSR-2
+indent_size = 4
+
+[*.yaml]
+# Indent using spaces instead of tabs, PSR-2
+indent_style = space
+
+# Use four spaces for `tab` width, PSR-2
+indent_size = 4
