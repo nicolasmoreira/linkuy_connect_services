@@ -6,36 +6,18 @@ use App\Entity\User;
 use App\Entity\Family;
 use App\Entity\UserType;
 use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Annotation\Route;
 
 class AuthenticationController extends AbstractController
 {
-    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
-    public function login(JWTTokenManagerInterface $jwtManager): JsonResponse
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            return new JsonResponse(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $token = $jwtManager->create($user);
-
-        return new JsonResponse([
-            'token' => $token,
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getUserIdentifier(),
-                'role' => $user->getRoles(),
-            ],
-        ]);
-    }
-
+    /**
+     * @throws \JsonException
+     */
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
@@ -55,9 +37,12 @@ class AuthenticationController extends AbstractController
             return new JsonResponse(['message' => 'Invalid role'], Response::HTTP_BAD_REQUEST);
         }
 
+        $deviceToken = $data['device_token'] ?? null;
+
         $user = new User($data['email'], '', $userType, $family);
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
+        $user->setDeviceToken($deviceToken);
 
         $em->persist($user);
         $em->flush();

@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'activity_log')]
+#[ORM\Table(name: 'activity_log', schema: 'public')]
 class ActivityLog
 {
     #[ORM\Id]

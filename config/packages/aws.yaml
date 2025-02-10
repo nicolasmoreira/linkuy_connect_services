@@ -1,0 +1,16 @@
+services:
+    Aws\Sqs\SqsClient:
+        arguments:
+            - region: '%env(AWS_REGION)%'
+              version: 'latest'
+              credentials:
+                  key: '%env(AWS_ACCESS_KEY_ID)%'
+                  secret: '%env(AWS_SECRET_ACCESS_KEY)%'
+
+    Aws\Sns\SnsClient:
+        arguments:
+            - region: '%env(AWS_REGION)%'
+              version: 'latest'
+              credentials:
+                  key: '%env(AWS_ACCESS_KEY_ID)%'
+                  secret: '%env(AWS_SECRET_ACCESS_KEY)%'

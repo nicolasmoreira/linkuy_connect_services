@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'settings')]
+#[ORM\Table(name: 'settings', schema: 'public')]
 class Settings
 {
     #[ORM\Id]

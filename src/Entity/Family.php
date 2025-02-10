@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'family')]
+#[ORM\Table(name: 'family', schema: 'public')]
 class Family
 {
     #[ORM\Id]

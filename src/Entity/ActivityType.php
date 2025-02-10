@@ -4,8 +4,9 @@ namespace App\Entity;
 
 enum ActivityType: string
 {
-    case WALKING = 'walking';
-    case RUNNING = 'running';
-    case FALL_DETECTED = 'fall_detected';
-    case INACTIVE = 'inactive';
+    case WALKING = 'WALKING';
+    case RUNNING = 'RUNNING';
+    case FALL_DETECTED = 'FALL_DETECTED';
+    case INACTIVE = 'INACTIVE';
+    const EMERGENCY_BUTTON_PRESSED = 'EMERGENCY_BUTTON_PRESSED';
 }
