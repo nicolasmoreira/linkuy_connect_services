@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -24,20 +25,47 @@ class Notification
     private bool $sent = false;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    private readonly \DateTimeImmutable $createdAt;
+    private readonly DateTimeImmutable $createdAt;
 
     public function __construct(User $recipient, string $message)
     {
         $this->recipient = $recipient;
         $this->message = $message;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int { return $this->id; }
-    public function getRecipient(): User { return $this->recipient; }
-    public function getMessage(): string { return $this->message; }
-    public function setMessage(string $message): void { $this->message = $message; }
-    public function isSent(): bool { return $this->sent; }
-    public function markAsSent(): void { $this->sent = true; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getRecipient(): User
+    {
+        return $this->recipient;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(string $message): void
+    {
+        $this->message = $message;
+    }
+
+    public function isSent(): bool
+    {
+        return $this->sent;
+    }
+
+    public function markAsSent(): void
+    {
+        $this->sent = true;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

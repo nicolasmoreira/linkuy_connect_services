@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use Symfony\Component\Notifier\NotifierInterface;
-use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\Bridge\Expo\ExpoOptions;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
 
 class PushNotificationService
 {

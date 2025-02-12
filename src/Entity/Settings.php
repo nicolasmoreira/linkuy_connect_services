@@ -28,10 +28,33 @@ class Settings
         $this->family = $family;
     }
 
-    public function getId(): int { return $this->id; }
-    public function getFamily(): Family { return $this->family; }
-    public function getInactivityThreshold(): int { return $this->inactivityThreshold; }
-    public function setInactivityThreshold(int $threshold): void { $this->inactivityThreshold = $threshold; }
-    public function isDoNotDisturb(): bool { return $this->doNotDisturb; }
-    public function setDoNotDisturb(bool $value): void { $this->doNotDisturb = $value; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getFamily(): Family
+    {
+        return $this->family;
+    }
+
+    public function getInactivityThreshold(): int
+    {
+        return $this->inactivityThreshold;
+    }
+
+    public function setInactivityThreshold(int $threshold): void
+    {
+        $this->inactivityThreshold = $threshold;
+    }
+
+    public function isDoNotDisturb(): bool
+    {
+        return $this->doNotDisturb;
+    }
+
+    public function setDoNotDisturb(bool $value): void
+    {
+        $this->doNotDisturb = $value;
+    }
 }

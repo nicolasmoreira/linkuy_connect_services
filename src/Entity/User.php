@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'user', schema: 'public')]
@@ -35,7 +36,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $deviceToken = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    private readonly \DateTimeImmutable $createdAt;
+    private readonly DateTimeImmutable $createdAt;
 
     public function __construct(string $email, string $password, UserType $userType, Family $family)
     {
@@ -43,21 +44,70 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
         $this->userType = $userType;
         $this->family = $family;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int { return $this->id; }
-    public function getEmail(): string { return $this->email; }
-    public function setEmail(string $email): void { $this->email = $email; }
-    public function getPassword(): string { return $this->password; }
-    public function setPassword(string $password): void { $this->password = $password; }
-    public function getUserType(): UserType { return $this->userType; }
-    public function getFamily(): Family { return $this->family; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
-    public function getDeviceToken(): ?string { return $this->deviceToken; }
-    public function setDeviceToken(?string $deviceToken): void { $this->deviceToken = $deviceToken; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
-    public function getRoles(): array { return [$this->userType->value]; }
-    public function eraseCredentials(): void {}
-    public function getUserIdentifier(): string { return $this->email; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
+    public function getUserType(): UserType
+    {
+        return $this->userType;
+    }
+
+    public function getFamily(): Family
+    {
+        return $this->family;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getDeviceToken(): ?string
+    {
+        return $this->deviceToken;
+    }
+
+    public function setDeviceToken(?string $deviceToken): void
+    {
+        $this->deviceToken = $deviceToken;
+    }
+
+    public function getRoles(): array
+    {
+        return [$this->userType->value];
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
 }

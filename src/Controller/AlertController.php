@@ -16,7 +16,7 @@ class AlertController extends AbstractController
     {
         $alerts = $em->getRepository(Alert::class)->findBy([], ['createdAt' => 'DESC']);
 
-        return new JsonResponse(array_map(static fn($alert) => [
+        return $this->json(array_map(static fn ($alert) => [
             'id' => $alert->getId(),
             'user' => $alert->getUser()->getEmail(),
             'type' => $alert->getAlertType()->value,
@@ -31,13 +31,13 @@ class AlertController extends AbstractController
         $alert = $em->getRepository(Alert::class)->find($id);
 
         if (!$alert) {
-            return new JsonResponse(['message' => 'Alert not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Alert not found'], Response::HTTP_NOT_FOUND);
         }
 
         $alert->markAsSent();
         $em->flush();
 
-        return new JsonResponse(['message' => 'Alert resolved successfully']);
+        return $this->json(['message' => 'Alert resolved successfully']);
     }
 
     #[Route('/api/alerts/{id}', name: 'api_alerts_delete', methods: ['DELETE'])]
@@ -46,12 +46,12 @@ class AlertController extends AbstractController
         $alert = $em->getRepository(Alert::class)->find($id);
 
         if (!$alert) {
-            return new JsonResponse(['message' => 'Alert not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Alert not found']);
         }
 
         $em->remove($alert);
         $em->flush();
 
-        return new JsonResponse(['message' => 'Alert deleted successfully']);
+        return $this->json(['message' => 'Alert deleted successfully']);
     }
 }

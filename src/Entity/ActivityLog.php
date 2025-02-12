@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -24,22 +25,41 @@ class ActivityLog
     private array $metadata = [];
 
     #[ORM\Column(type: 'datetime_immutable')]
-    private readonly \DateTimeImmutable $createdAt;
+    private readonly DateTimeImmutable $createdAt;
 
     public function __construct(
-        User $user,
+        User         $user,
         ActivityType $activityType,
-        array $metadata = []
+        array        $metadata = []
     ) {
         $this->user = $user;
         $this->activityType = $activityType;
         $this->metadata = $metadata;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int { return $this->id; }
-    public function getUser(): User { return $this->user; }
-    public function getActivityType(): ActivityType { return $this->activityType; }
-    public function getMetadata(): array { return $this->metadata; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getActivityType(): ActivityType
+    {
+        return $this->activityType;
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->metadata;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

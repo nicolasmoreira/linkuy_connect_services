@@ -19,13 +19,13 @@ class SettingsController extends AbstractController
         $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
         if (!$settings) {
-            return new JsonResponse(['message' => 'Settings not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Settings not found'], Response::HTTP_NOT_FOUND);
         }
 
-        return new JsonResponse([
+        return $this->json([
             'inactivity_threshold' => $settings->getInactivityThreshold(),
             'do_not_disturb' => $settings->isDoNotDisturb(),
-        ], Response::HTTP_OK);
+        ]);
     }
 
     #[Route('/api/settings', name: 'update_settings', methods: ['PUT'])]
@@ -35,19 +35,19 @@ class SettingsController extends AbstractController
         $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
         if (!$settings) {
-            return new JsonResponse(['message' => 'Settings not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Settings not found'], Response::HTTP_NOT_FOUND);
         }
 
         $data = json_decode($request->getContent(), true);
         if (isset($data['inactivity_threshold'])) {
-            $settings->setInactivityThreshold((int) $data['inactivity_threshold']);
+            $settings->setInactivityThreshold((int)$data['inactivity_threshold']);
         }
         if (isset($data['do_not_disturb'])) {
-            $settings->setDoNotDisturb((bool) $data['do_not_disturb']);
+            $settings->setDoNotDisturb((bool)$data['do_not_disturb']);
         }
 
         $em->flush();
 
-        return new JsonResponse(['message' => 'Settings updated successfully'], Response::HTTP_OK);
+        return $this->json(['message' => 'Settings updated successfully']);
     }
 }

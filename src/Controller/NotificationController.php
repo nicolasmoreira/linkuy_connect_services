@@ -17,12 +17,12 @@ class NotificationController extends AbstractController
         $user = $this->getUser();
         $notifications = $em->getRepository(Notification::class)->findBy(['recipient' => $user], ['createdAt' => 'DESC']);
 
-        return new JsonResponse(array_map(static fn ($notification) => [
+        return $this->json(array_map(static fn ($notification) => [
             'id' => $notification->getId(),
             'message' => $notification->getMessage(),
             'sent' => $notification->isSent(),
             'created_at' => $notification->getCreatedAt()->format('Y-m-d H:i:s')
-        ], $notifications), Response::HTTP_OK);
+        ], $notifications));
     }
 
     #[Route('/api/notifications/{id}', name: 'api_notifications_update', methods: ['PATCH'])]
@@ -31,12 +31,12 @@ class NotificationController extends AbstractController
         $notification = $em->getRepository(Notification::class)->find($id);
 
         if (!$notification) {
-            return new JsonResponse(['message' => 'Notification not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Notification not found'], Response::HTTP_NOT_FOUND);
         }
 
         $notification->markAsSent();
         $em->flush();
 
-        return new JsonResponse(['message' => 'Notification status updated'], Response::HTTP_OK);
+        return $this->json(['message' => 'Notification status updated']);
     }
 }

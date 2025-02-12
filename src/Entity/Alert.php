@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -24,19 +25,42 @@ class Alert
     private bool $sent = false;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    private readonly \DateTimeImmutable $createdAt;
+    private readonly DateTimeImmutable $createdAt;
 
     public function __construct(User $user, AlertType $alertType)
     {
         $this->user = $user;
         $this->alertType = $alertType;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int { return $this->id; }
-    public function getUser(): User { return $this->user; }
-    public function getAlertType(): AlertType { return $this->alertType; }
-    public function isSent(): bool { return $this->sent; }
-    public function markAsSent(): void { $this->sent = true; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getAlertType(): AlertType
+    {
+        return $this->alertType;
+    }
+
+    public function isSent(): bool
+    {
+        return $this->sent;
+    }
+
+    public function markAsSent(): void
+    {
+        $this->sent = true;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }
