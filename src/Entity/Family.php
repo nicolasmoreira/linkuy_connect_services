@@ -13,8 +13,8 @@ class Family
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private readonly int $id;
+    #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -25,7 +25,7 @@ class Family
     #[ORM\Column(type: 'datetime_immutable')]
     private readonly DateTimeImmutable $createdAt;
 
-    #[ORM\OneToMany(mappedBy: 'family', targetEntity: User::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'family', cascade: ['persist', 'remove'])]
     private Collection $users;
 
     public function __construct(string $name)
@@ -35,7 +35,7 @@ class Family
         $this->users = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

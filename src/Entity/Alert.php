@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\AlertType;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -11,15 +12,15 @@ class Alert
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private readonly int $id;
+    #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private readonly User $user;
 
     #[ORM\Column(type: 'string', length: 255, enumType: AlertType::class)]
-    private readonly AlertType $alertType;
+    private readonly AlertType $type;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $sent = false;
@@ -27,14 +28,14 @@ class Alert
     #[ORM\Column(type: 'datetime_immutable')]
     private readonly DateTimeImmutable $createdAt;
 
-    public function __construct(User $user, AlertType $alertType)
+    public function __construct(User $user, AlertType $type)
     {
         $this->user = $user;
-        $this->alertType = $alertType;
+        $this->type = $type;
         $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -44,9 +45,9 @@ class Alert
         return $this->user;
     }
 
-    public function getAlertType(): AlertType
+    public function getType(): AlertType
     {
-        return $this->alertType;
+        return $this->type;
     }
 
     public function isSent(): bool

@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\ActivityLog;
-use App\Entity\ActivityType;
 use App\Entity\User;
+use App\Enum\ActivityType;
 use App\Service\PushNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use JsonException;

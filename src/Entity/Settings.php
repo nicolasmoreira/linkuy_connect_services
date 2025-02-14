@@ -10,8 +10,8 @@ class Settings
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private readonly int $id;
+    #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Family::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -28,7 +28,7 @@ class Settings
         $this->family = $family;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

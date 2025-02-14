@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\UserType;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -13,8 +14,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private readonly int $id;
+    #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     private string $email;
@@ -38,8 +39,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime_immutable')]
     private readonly DateTimeImmutable $createdAt;
 
-    public function __construct(string $email, string $password, UserType $userType, Family $family)
-    {
+    public function __construct(
+        string   $email,
+        string   $password,
+        UserType $userType,
+        Family   $family
+    ) {
         $this->email = $email;
         $this->password = $password;
         $this->userType = $userType;
@@ -47,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new DateTimeImmutable();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -82,6 +87,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->family;
     }
 
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): void
+    {
+        $this->active = $active;
+    }
+
     public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
@@ -102,12 +117,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return [$this->userType->value];
     }
 
-    public function eraseCredentials(): void
-    {
-    }
-
     public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }

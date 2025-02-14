@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Family;
 use App\Entity\User;
-use App\Entity\UserType;
+use App\Enum\UserType;
 use Doctrine\ORM\EntityManagerInterface;
 use JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,12 +16,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AuthenticationController extends AbstractController
 {
-    #[Route('/api/login', name: 'api_login')]
-    public function index(): JsonResponse
-    {
-        return $this->json('Login endpoint');
-    }
-
     /**
      * @throws JsonException
      */

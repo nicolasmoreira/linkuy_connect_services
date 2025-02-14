@@ -19,7 +19,7 @@ class AlertController extends AbstractController
         return $this->json(array_map(static fn ($alert) => [
             'id' => $alert->getId(),
             'user' => $alert->getUser()->getEmail(),
-            'type' => $alert->getAlertType()->value,
+            'type' => $alert->getType()->value,
             'sent' => $alert->isSent(),
             'created_at' => $alert->getCreatedAt()->format('Y-m-d H:i:s')
         ], $alerts));
