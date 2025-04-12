@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'notification', schema: 'public')]
 class Notification
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
@@ -16,7 +20,11 @@ class Notification
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private readonly User $recipient;
+    private readonly User $user;
+
+    #[ORM\ManyToOne(targetEntity: Family::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private readonly Family $family;
 
     #[ORM\Column(type: 'text')]
     private string $message;
@@ -24,14 +32,11 @@ class Notification
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $sent = false;
 
-    #[ORM\Column(type: 'datetime_immutable')]
-    private readonly DateTimeImmutable $createdAt;
-
-    public function __construct(User $recipient, string $message)
+    public function __construct(User $user, string $message)
     {
-        $this->recipient = $recipient;
+        $this->user = $user;
+        $this->family = $user->getFamily();
         $this->message = $message;
-        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -39,9 +44,14 @@ class Notification
         return $this->id;
     }
 
-    public function getRecipient(): User
+    public function getUser(): User
     {
-        return $this->recipient;
+        return $this->user;
+    }
+
+    public function getFamily(): Family
+    {
+        return $this->family;
     }
 
     public function getMessage(): string
@@ -49,9 +59,11 @@ class Notification
         return $this->message;
     }
 
-    public function setMessage(string $message): void
+    public function setMessage(string $message): self
     {
         $this->message = $message;
+
+        return $this;
     }
 
     public function isSent(): bool
@@ -59,13 +71,10 @@ class Notification
         return $this->sent;
     }
 
-    public function markAsSent(): void
+    public function markAsSent(): self
     {
         $this->sent = true;
-    }
 
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
+        return $this;
     }
 }

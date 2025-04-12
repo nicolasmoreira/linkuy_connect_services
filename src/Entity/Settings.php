@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'settings', schema: 'public')]
 class Settings
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
@@ -20,6 +25,13 @@ class Settings
     #[ORM\Column(type: 'smallint', options: ['default' => 30])]
     private int $inactivityThreshold = 30;
 
+    #[ORM\Column(type: 'time', nullable: true)]
+    private ?\DateTimeInterface $doNotDisturbStartTime = null;
+
+    #[ORM\Column(type: 'time', nullable: true)]
+    private ?\DateTimeInterface $doNotDisturbEndTime = null;
+
+    // dnd
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $doNotDisturb = false;
 
@@ -43,9 +55,35 @@ class Settings
         return $this->inactivityThreshold;
     }
 
-    public function setInactivityThreshold(int $threshold): void
+    public function setInactivityThreshold(int $threshold): self
     {
         $this->inactivityThreshold = $threshold;
+
+        return $this;
+    }
+
+    public function setDoNotDisturbStartTime(?\DateTimeInterface $time): self
+    {
+        $this->doNotDisturbStartTime = $time;
+
+        return $this;
+    }
+
+    public function getDoNotDisturbStartTime(): ?\DateTimeInterface
+    {
+        return $this->doNotDisturbStartTime;
+    }
+
+    public function setDoNotDisturbEndTime(?\DateTimeInterface $time): self
+    {
+        $this->doNotDisturbEndTime = $time;
+
+        return $this;
+    }
+
+    public function getDoNotDisturbEndTime(): ?\DateTimeInterface
+    {
+        return $this->doNotDisturbEndTime;
     }
 
     public function isDoNotDisturb(): bool
@@ -53,8 +91,10 @@ class Settings
         return $this->doNotDisturb;
     }
 
-    public function setDoNotDisturb(bool $value): void
+    public function setDoNotDisturb(bool $value): self
     {
         $this->doNotDisturb = $value;
+
+        return $this;
     }
 }

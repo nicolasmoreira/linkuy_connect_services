@@ -1,53 +1,118 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use App\Entity\Family;
 use App\Entity\User;
-use App\Enum\UserType;
+use App\Trait\ApiResponseTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use JsonException;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AuthenticationController extends AbstractController
+#[OA\Tag(name: 'Authentication')]
+final class AuthenticationController extends AbstractController
 {
+    use ApiResponseTrait;
+
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {}
+
     /**
-     * @throws JsonException
+     * User login.
      */
-    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
-    public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    #[OA\RequestBody(
+        description: 'User credentials',
+        required: true,
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'email', type: 'string', example: 'cuidador@unir.com'),
+                new OA\Property(property: 'password', type: 'string', example: 'password123'),
+            ],
+        ),
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Login successful',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'success'),
+                new OA\Property(property: 'message', type: 'string', example: 'Authentication successful'),
+                new OA\Property(
+                    property: 'token',
+                    type: 'string',
+                    example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3NDQzMTUxMDYsImV4cCI6MTc3NTg1MTEwNiwicm9sZXMiOlsiUk9MRV9DQVJFR0lWRVIiXSwidXNlcm5hbWUiOiJjdWlkYWRvckB1bmlyLmNvbSJ9.E5WjABs9-_FosVwuGiOcnFGgm0n_KUaJeDvoTbNojzIkMxZR1UtrhyRVkEQmXA1KSYUKyUHPZoKeJfye1oCgTEqhqGH-p1PFADtvJiaDOHjiuNP6EIfcMK_XvEgh7EvEwWAx4KG2UlQJqMdp7xJkYKZsyLAKk3YP6Or2_H1CtHqCzxV6opiOiiWofkA_OV6sE_QBCEzSHEGT4Cn0ZezeV6ZgtIRp_KakiU-cl2TfYQvUWGlg-HoBEX5kWgZD1e8y60IHlgsKk3TaiWIWEoQzFJaAS54-c8BWvA2nrrBxYRLYTQSYmkdlSNtK8OYKb6pehz1F2TY3XUtXf_ui2m2dmQ'
+                ),
+                new OA\Property(
+                    property: 'user',
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'email', type: 'string', example: 'cuidador@unir.com'),
+                        new OA\Property(
+                            property: 'role',
+                            type: 'array',
+                            items: new OA\Items(type: 'string', example: 'ROLE_CAREGIVER'),
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Invalid credentials',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'error'),
+                new OA\Property(property: 'message', type: 'string', example: 'Invalid credentials'),
+            ],
+        ),
+    )]
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function login(): JsonResponse
     {
-        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        // Login is handled by LexikJWTAuthenticationBundle
+        return $this->json(['message' => 'Inicio de sesión exitoso']);
+    }
 
-        if (!isset($data['email'], $data['password'], $data['family'], $data['role'])) {
-            return $this->json(['message' => 'Missing required fields'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $family = $em->getRepository(Family::class)->find($data['family']);
-        if (!$family) {
-            return $this->json(['message' => 'Family not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        $userType = UserType::tryFrom($data['role']);
-        if (!$userType) {
-            return $this->json(['message' => 'Invalid role'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $deviceToken = $data['device_token'] ?? null;
-
-        $user = new User($data['email'], '', $userType, $family);
-        $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
-        $user->setDeviceToken($deviceToken);
-
-        $em->persist($user);
-        $em->flush();
-
-        return $this->json(['message' => 'User registered successfully'], Response::HTTP_CREATED);
+    /**
+     * Check if the JWT token is valid.
+     */
+    #[OA\Response(
+        response: 200,
+        description: 'Token is valid',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'success'),
+                new OA\Property(
+                    property: 'data',
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Token válido'),
+                    ],
+                ),
+            ],
+        ),
+    )]
+    #[OA\Response(
+        response: 401,
+        description: 'Token is invalid',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'error'),
+                new OA\Property(property: 'message', type: 'string', example: 'Token inválido'),
+            ],
+        ),
+    )]
+    #[Route('/api/check-token', name: 'check_token', methods: ['GET'])]
+    public function checkToken(): JsonResponse
+    {
+        return $this->success(['message' => 'Token válido']);
     }
 }

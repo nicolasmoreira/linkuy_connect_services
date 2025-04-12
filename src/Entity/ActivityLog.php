@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Enum\ActivityType;
-use DateTimeImmutable;
+use App\Repository\ActivityLogRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ActivityLogRepository::class)]
 #[ORM\Table(name: 'activity_log', schema: 'public')]
 #[ORM\Index(name: 'idx_activity_user', columns: ['user_id'])]
 #[ORM\Index(name: 'idx_activity_type', columns: ['type'])]
@@ -18,7 +21,7 @@ class ActivityLog
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private readonly User $user;
 
     #[ORM\Column(type: 'string', length: 255, enumType: ActivityType::class)]
@@ -42,18 +45,18 @@ class ActivityLog
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = [];
 
-    #[ORM\Column(type: 'datetimetz_immutable', options: ['default' => 'NOW()'])]
-    private readonly DateTimeImmutable $createdAt;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $createdAt = null;
 
     public function __construct(
-        User         $user,
+        User $user,
         ActivityType $type,
-        ?int         $steps = null,
-        ?float       $distanceKm = null,
-        ?float       $latitude = null,
-        ?float       $longitude = null,
-        ?float       $accuracyMeters = null,
-        ?array       $metadata = []
+        ?int $steps = null,
+        ?float $distanceKm = null,
+        ?float $latitude = null,
+        ?float $longitude = null,
+        ?float $accuracyMeters = null,
+        ?array $metadata = [],
     ) {
         $this->user = $user;
         $this->type = $type;
@@ -63,7 +66,6 @@ class ActivityLog
         $this->longitude = $longitude;
         $this->accuracyMeters = $accuracyMeters;
         $this->metadata = $metadata;
-        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -111,8 +113,15 @@ class ActivityLog
         return $this->metadata;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
     }
 }

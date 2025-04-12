@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -8,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerInterface;
 
-class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
+final class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
     private JWTTokenManagerInterface $jwtManager;
 
@@ -30,7 +32,7 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
                 'id' => $user->getId(),
                 'email' => $user->getUserIdentifier(),
                 'role' => $user->getRoles(),
-            ]
+            ],
         ]);
     }
 }

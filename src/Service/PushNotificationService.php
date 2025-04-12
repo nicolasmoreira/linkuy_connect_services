@@ -1,41 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Notifier\Bridge\Expo\ExpoOptions;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 
-class PushNotificationService
+final class PushNotificationService
 {
-    private NotifierInterface $notifier;
-
-    public function __construct(NotifierInterface $notifier)
-    {
-        $this->notifier = $notifier;
-    }
+    public function __construct(
+        private readonly NotifierInterface $notifier,
+        private readonly LoggerInterface $logger,
+    ) {}
 
     public function sendNotification(string $expoToken, string $title, string $message): void
     {
-        // Crear la notificación indicando el canal 'expo'
-        $notification = new Notification($title, ['expo']);
+        try {
+            $notification = new Notification($title, ['expo']);
+            $notification->content($message);
+            $notification->importance(Notification::IMPORTANCE_HIGH);
 
-        // Establecer el contenido de la notificación
-        $notification->content($message);
+            $recipient = new Recipient($expoToken);
+            $this->notifier->send($notification, $recipient);
+            $this->logger->info("Push notification sent successfully to token: {$expoToken}");
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to send push notification: {$e->getMessage()}");
 
-        // Configurar las opciones para el transport de Expo.
-        // Estas opciones se definen en el array que se pasa al constructor de ExpoOptions.
-        $options = [
-            'title' => $title,
-            'body' => $message,
-            'priority' => 'high',
-        ];
-        $expoOptions = new ExpoOptions($expoToken, $options);
-
-        // Asociar las opciones de Expo a la notificación
-        $notification->options($expoOptions);
-
-        // Enviar la notificación
-        $this->notifier->send($notification);
+            throw $e;
+        }
     }
 }

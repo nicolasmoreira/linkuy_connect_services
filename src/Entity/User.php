@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Enum\UserType;
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -12,6 +14,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Table(name: 'user', schema: 'public')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
@@ -22,6 +26,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'string')]
     private string $password;
+
+    // / DEVICE_TYPE
 
     #[ORM\Column(type: 'string', enumType: UserType::class)]
     private UserType $userType;
@@ -36,20 +42,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $deviceToken = null;
 
-    #[ORM\Column(type: 'datetime_immutable')]
-    private readonly DateTimeImmutable $createdAt;
-
     public function __construct(
-        string   $email,
-        string   $password,
+        string $email,
+        string $password,
         UserType $userType,
-        Family   $family
+        Family $family,
     ) {
         $this->email = $email;
         $this->password = $password;
         $this->userType = $userType;
         $this->family = $family;
-        $this->createdAt = new DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -62,9 +65,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
     }
 
     public function getPassword(): string
@@ -72,9 +77,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): void
+    public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
     }
 
     public function getUserType(): UserType
@@ -92,14 +99,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->active;
     }
 
-    public function setActive(bool $active): void
+    public function setActive(bool $active): self
     {
         $this->active = $active;
-    }
 
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
+        return $this;
     }
 
     public function getDeviceToken(): ?string
@@ -107,9 +111,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->deviceToken;
     }
 
-    public function setDeviceToken(?string $deviceToken): void
+    public function setDeviceToken(?string $deviceToken): self
     {
         $this->deviceToken = $deviceToken;
+
+        return $this;
     }
 
     public function getRoles(): array
@@ -122,7 +128,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function eraseCredentials(): void
+    public function eraseCredentials(): self
     {
+        return $this;
     }
 }

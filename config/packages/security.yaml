@@ -1,7 +1,7 @@
 security:
     enable_authenticator_manager: true
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
     providers:
         app_user_provider:
@@ -31,6 +31,10 @@ security:
 
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc, roles: PUBLIC_ACCESS }
+        - { path: ^/api/activity-log, roles: ROLE_CAREGIVER }
+        - { path: ^/api/notifications, roles: ROLE_CAREGIVER }
+        - { path: ^/worker/sqs, roles: PUBLIC_ACCESS }
         - { path: ^/api/, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

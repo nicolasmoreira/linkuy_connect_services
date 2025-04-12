@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'family', schema: 'public')]
 class Family
 {
+    use TimestampableEntity;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
@@ -22,16 +26,12 @@ class Family
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private bool $active = true;
 
-    #[ORM\Column(type: 'datetime_immutable')]
-    private readonly DateTimeImmutable $createdAt;
-
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'family', cascade: ['persist', 'remove'])]
     private Collection $users;
 
     public function __construct(string $name)
     {
         $this->name = $name;
-        $this->createdAt = new DateTimeImmutable();
         $this->users = new ArrayCollection();
     }
 
@@ -58,11 +58,6 @@ class Family
     public function setActive(bool $active): void
     {
         $this->active = $active;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
     }
 
     public function getUsers(): Collection
