@@ -118,6 +118,9 @@ final class AuthenticationController extends AbstractController
         return $this->success(['message' => 'Token válido']);
     }
 
+    /**
+     * @throws \JsonException
+     */
     #[OA\RequestBody(
         description: 'Device token',
         required: true,
@@ -150,13 +153,13 @@ final class AuthenticationController extends AbstractController
     #[Route('/api/device-token', name: 'add_device_token', methods: ['POST'])]
     public function addDeviceToken(#[CurrentUser] User $user, Request $request): JsonResponse
     {
-        $deviceToken = $request->request->get('device_token');
+        $data = json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR);
 
-        if (empty($deviceToken)) {
+        if (empty($data['device_token'])) {
             return $this->error('Invalid device token', 400);
         }
 
-        $user->setDeviceToken($deviceToken);
+        $user->setDeviceToken($data['device_token']);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
