@@ -20,7 +20,7 @@ final class PushNotificationService
      */
     public function sendNotification(string $deviceToken, string $title, string $content): void
     {
-        $options = new ExpoOptions($deviceToken, ['priority' => 'high', 'badge' => 1]);
+        $options = new ExpoOptions($deviceToken, ['priority' => 'high', 'badge' => 1, 'sound' => 'default']);
         $chatMessage = (new PushMessage($title, $content, $options))->transport('expo');
         $this->texter->send($chatMessage);
     }

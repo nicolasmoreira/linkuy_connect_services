@@ -103,7 +103,7 @@ final class SqsWebhookController extends AbstractController
                 $this->logger->info('Processing fall detection', ['user_id' => $user->getId()]);
                 $this->pushNotificationService->sendNotification(
                     $user->getDeviceToken(),
-                    'Alerta: Caída detectada',
+                    '🚨Alerta: Caída detectada',
                     'Se ha detectado una caída. Por favor, verifique el estado del usuario.',
                 );
 
