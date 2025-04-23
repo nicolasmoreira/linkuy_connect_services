@@ -22,16 +22,16 @@ final class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): JsonResponse
     {
         $user = $token->getUser();
-        $jwtToken = $this->jwtManager->create($user); // 📌 Generar token JWT aquí
+        $jwtToken = $this->jwtManager->create($user);
 
         return new JsonResponse([
             'status' => 'success',
             'message' => 'Authentication successful',
-            'token' => $jwtToken, // 📌 Incluir el token en la respuesta
+            'token' => $jwtToken,
             'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getUserIdentifier(),
-                'role' => $user->getRoles(),
+                'id' => $user?->getId(),
+                'email' => $user?->getUserIdentifier(),
+                'role' => $user?->getRoles(),
             ],
         ]);
     }

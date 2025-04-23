@@ -28,22 +28,22 @@ class ActivityLog
     private readonly ActivityType $type;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $steps = null;
+    private ?int $steps;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $distanceKm = null;
+    private ?float $distanceKm;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $latitude = null;
+    private ?float $latitude;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $longitude = null;
+    private ?float $longitude;
 
     #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $accuracyMeters = null;
+    private ?float $accuracyMeters;
 
     #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $metadata = [];
+    private ?array $metadata;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $createdAt = null;

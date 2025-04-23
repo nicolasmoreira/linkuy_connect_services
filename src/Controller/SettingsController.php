@@ -10,6 +10,7 @@ use App\Trait\ApiResponseTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -32,43 +33,43 @@ final class SettingsController extends AbstractController
                 new OA\Property(property: 'status', type: 'string', example: 'success'),
                 new OA\Property(
                     property: 'data',
-                    type: 'object',
                     properties: [
                         new OA\Property(
                             property: 'inactivity_threshold',
+                            description: 'Umbral de inactividad en minutos',
                             type: 'integer',
                             example: 30,
-                            description: 'Umbral de inactividad en minutos'
                         ),
                         new OA\Property(
                             property: 'do_not_disturb',
+                            description: 'Activar/desactivar modo no molestar',
                             type: 'boolean',
                             example: false,
-                            description: 'Activar/desactivar modo no molestar'
                         ),
                         new OA\Property(
                             property: 'do_not_disturb_start_time',
+                            description: 'Hora de inicio para modo no molestar (formato HH:MM:SS)',
                             type: 'string',
                             format: 'time',
                             example: '22:00:00',
                             nullable: true,
-                            description: 'Hora de inicio para modo no molestar (formato HH:MM:SS)'
                         ),
                         new OA\Property(
                             property: 'do_not_disturb_end_time',
+                            description: 'Hora de fin para modo no molestar (formato HH:MM:SS)',
                             type: 'string',
                             format: 'time',
                             example: '07:00:00',
                             nullable: true,
-                            description: 'Hora de fin para modo no molestar (formato HH:MM:SS)'
                         ),
                     ],
+                    type: 'object',
                 ),
             ],
         ),
     )]
     #[Route('/api/settings', name: 'get_settings', methods: ['GET'])]
-    public function getSettings(#[CurrentUser] User $user, EntityManagerInterface $em)
+    public function getSettings(#[CurrentUser] User $user, EntityManagerInterface $em): JsonResponse
     {
         $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
@@ -86,6 +87,7 @@ final class SettingsController extends AbstractController
 
     /**
      * Update user settings.
+     * @throws \JsonException
      */
     #[OA\RequestBody(
         description: 'Settings to update',
@@ -94,31 +96,31 @@ final class SettingsController extends AbstractController
             properties: [
                 new OA\Property(
                     property: 'inactivity_threshold',
+                    description: 'Umbral de inactividad en minutos (1-1440)',
                     type: 'integer',
                     example: 30,
-                    description: 'Umbral de inactividad en minutos (1-1440)',
                 ),
                 new OA\Property(
                     property: 'do_not_disturb',
+                    description: 'Activar/desactivar modo no molestar',
                     type: 'boolean',
                     example: false,
-                    description: 'Activar/desactivar modo no molestar',
                 ),
                 new OA\Property(
                     property: 'do_not_disturb_start_time',
+                    description: 'Hora de inicio para modo no molestar (formato HH:MM:SS)',
                     type: 'string',
                     format: 'time',
                     example: '22:00:00',
                     nullable: true,
-                    description: 'Hora de inicio para modo no molestar (formato HH:MM:SS)',
                 ),
                 new OA\Property(
                     property: 'do_not_disturb_end_time',
+                    description: 'Hora de fin para modo no molestar (formato HH:MM:SS)',
                     type: 'string',
                     format: 'time',
                     example: '07:00:00',
                     nullable: true,
-                    description: 'Hora de fin para modo no molestar (formato HH:MM:SS)',
                 ),
             ],
         ),
@@ -131,20 +133,20 @@ final class SettingsController extends AbstractController
                 new OA\Property(property: 'status', type: 'string', example: 'success'),
                 new OA\Property(
                     property: 'data',
-                    type: 'object',
                     properties: [
                         new OA\Property(
                             property: 'message',
                             type: 'string',
-                            example: 'Configuración actualizada exitosamente'
+                            example: 'Configuración actualizada exitosamente',
                         ),
                     ],
+                    type: 'object',
                 ),
             ],
         ),
     )]
     #[Route('/api/settings', name: 'update_settings', methods: ['PUT'])]
-    public function updateSettings(#[CurrentUser] User $user, Request $request, EntityManagerInterface $em)
+    public function updateSettings(#[CurrentUser] User $user, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
@@ -152,7 +154,7 @@ final class SettingsController extends AbstractController
             return $this->notFound('Configuración no encontrada');
         }
 
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR);
 
         if (isset($data['inactivity_threshold'])) {
             $threshold = (int) $data['inactivity_threshold'];
@@ -176,7 +178,7 @@ final class SettingsController extends AbstractController
                         return $this->error('Formato de hora inválido. Use HH:MM:SS');
                     }
                     $settings->setDoNotDisturbStartTime($time);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     return $this->error('Formato de hora inválido');
                 }
             }
@@ -192,7 +194,7 @@ final class SettingsController extends AbstractController
                         return $this->error('Formato de hora inválido. Use HH:MM:SS');
                     }
                     $settings->setDoNotDisturbEndTime($time);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     return $this->error('Formato de hora inválido');
                 }
             }

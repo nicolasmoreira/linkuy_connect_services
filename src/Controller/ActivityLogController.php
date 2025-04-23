@@ -26,7 +26,7 @@ final class ActivityLogController extends AbstractController
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly ActivityLogRepository $activityLogRepository
+        private readonly ActivityLogRepository $activityLogRepository,
     ) {}
 
     /**
@@ -72,7 +72,7 @@ final class ActivityLogController extends AbstractController
                 $activityLogs[] = [
                     'id' => $log->getId(),
                     'type' => $log->getType()->value,
-                    'created_at' => $log->getCreatedAt()->format('c'),
+                    'created_at' => $log->getCreatedAt()?->format('c'),
                     'user' => [
                         'id' => $senior->getId(),
                     ],
@@ -129,7 +129,7 @@ final class ActivityLogController extends AbstractController
                     'latitude' => $lastLocation->getLatitude(),
                     'longitude' => $lastLocation->getLongitude(),
                     'accuracy_meters' => $lastLocation->getAccuracyMeters(),
-                    'created_at' => $lastLocation->getCreatedAt()->format('c'),
+                    'created_at' => $lastLocation->getCreatedAt()?->format('c'),
                     'user' => [
                         'id' => $senior->getId(),
                     ],

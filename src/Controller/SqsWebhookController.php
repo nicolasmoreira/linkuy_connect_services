@@ -73,7 +73,7 @@ final class SqsWebhookController extends AbstractController
                 ActivityType::FALL_DETECTED => $this->handleFallDetected($user, $message),
                 ActivityType::INACTIVITY_ALERT => $this->handleInactivityAlert($user, $message),
                 ActivityType::EMERGENCY_BUTTON_PRESSED => $this->handleEmergencyButton($user, $message),
-                default => $this->logger->warning("Unhandled activity type: {$activityType->value}"),
+                default => $this->logger->warning("Unhandled activity type: $activityType->value"),
             };
 
             return $this->json(['message' => 'Message processed successfully']);

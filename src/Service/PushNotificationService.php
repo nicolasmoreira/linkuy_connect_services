@@ -25,7 +25,7 @@ final class PushNotificationService
 
             $recipient = new Recipient($expoToken);
             $this->notifier->send($notification, $recipient);
-            $this->logger->info("Push notification sent successfully to token: {$expoToken}");
+            $this->logger->info("Push notification sent successfully to token: $expoToken");
         } catch (\Exception $e) {
             $this->logger->error("Failed to send push notification: {$e->getMessage()}");
 
