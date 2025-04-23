@@ -30,13 +30,14 @@ class Notification
     private string $message;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $sent = false;
+    private bool $sent;
 
-    public function __construct(User $user, string $message)
+    public function __construct(User $user, string $message, bool $sent = false)
     {
         $this->user = $user;
         $this->family = $user->getFamily();
         $this->message = $message;
+        $this->sent = $sent;
     }
 
     public function getId(): ?int

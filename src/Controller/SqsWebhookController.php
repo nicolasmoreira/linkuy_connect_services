@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Notification;
 use App\Entity\User;
 use App\Enum\ActivityType;
+use App\Enum\UserType;
 use App\Service\PushNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -32,7 +33,6 @@ final class SqsWebhookController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true, 512, \JSON_THROW_ON_ERROR);
 
-            // Handle SQS subscription confirmation
             if (isset($data['Type']) && $data['Type'] === 'SubscriptionConfirmation') {
                 $this->logger->info('Processing SQS subscription confirmation');
                 file_get_contents($data['SubscribeURL']);
@@ -68,15 +68,18 @@ final class SqsWebhookController extends AbstractController
                 return $this->json(['message' => 'Invalid activity type'], Response::HTTP_BAD_REQUEST);
             }
 
-            // Handle different activity types
+            $caregivers = $this->entityManager->getRepository(User::class)->findBy(
+                ['family' => $user->getFamily()->getId(), 'active' => true, 'userType' => UserType::CAREGIVER],
+            );
+
             match ($activityType) {
-                ActivityType::FALL_DETECTED => $this->handleFallDetected($user, $message),
-                ActivityType::INACTIVITY_ALERT => $this->handleInactivityAlert($user, $message),
-                ActivityType::EMERGENCY_BUTTON_PRESSED => $this->handleEmergencyButton($user, $message),
+                ActivityType::FALL_DETECTED => $this->handleFallDetected($caregivers),
+                ActivityType::INACTIVITY_ALERT => $this->handleInactivityAlert($caregivers),
+                ActivityType::EMERGENCY_BUTTON_PRESSED => $this->handleEmergencyButton($caregivers),
                 default => $this->logger->warning("Unhandled activity type: $activityType->value"),
             };
 
-            return $this->json(['message' => 'Message processed successfully']);
+            return $this->json(['message' => 'Message processed']);
         } catch (\JsonException $e) {
             $this->logger->error('Invalid JSON format in SQS payload', ['error' => $e->getMessage()]);
 
@@ -88,65 +91,87 @@ final class SqsWebhookController extends AbstractController
         }
     }
 
-    private function handleFallDetected(User $user, array $message): void
+    private function handleFallDetected(?array $users): void
     {
-        $this->logger->info('Processing fall detection', ['user_id' => $user->getId()]);
-        $this->sendPushNotification(
-            $user,
-            '⚠️ Alerta: Caída detectada',
-            'Se ha detectado una caída. Por favor, verifique el estado del usuario.',
-        );
+        foreach ($users as $user) {
+            try {
+                if (empty($user->getDeviceToken())) {
+                    $this->logger->info('User has no device token', ['user_id' => $user->getId()]);
 
-        $notification = new Notification($user, 'Caída detectada en ubicación: '.
-            "{$message['location']['latitude']}, {$message['location']['longitude']}");
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
+                    return;
+                }
+                $this->logger->info('Processing fall detection', ['user_id' => $user->getId()]);
+                $this->pushNotificationService->sendNotification(
+                    $user->getDeviceToken(),
+                    'Alerta: Caída detectada',
+                    'Se ha detectado una caída. Por favor, verifique el estado del usuario.',
+                );
 
-    private function handleInactivityAlert(User $user, array $message): void
-    {
-        $this->logger->info('Processing inactivity alert', ['user_id' => $user->getId()]);
-        $this->sendPushNotification(
-            $user,
-            '⚠️ Alerta: Inactividad prolongada',
-            'El usuario ha estado inactivo por un período prolongado.',
-        );
-
-        $notification = new Notification($user, 'Alerta de inactividad en ubicación: '.
-            "{$message['location']['latitude']}, {$message['location']['longitude']}");
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
-
-    private function handleEmergencyButton(User $user, array $message): void
-    {
-        $this->logger->info('Processing emergency button press', ['user_id' => $user->getId()]);
-        $this->sendPushNotification(
-            $user,
-            '🚨 Alerta: Botón de emergencia activado',
-            'Se ha presionado el botón de emergencia. Se requiere atención inmediata.',
-        );
-
-        $notification = new Notification($user, 'Botón de emergencia presionado en ubicación: '.
-            "{$message['location']['latitude']}, {$message['location']['longitude']}");
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
-
-    private function sendPushNotification(User $user, string $title, string $body): void
-    {
-        $deviceToken = $user->getDeviceToken();
-        if (!$deviceToken) {
-            $this->logger->warning("No device token found for user {$user->getId()}");
-
-            return;
+                $notification = new Notification($user, 'Se ha detectado una caída. Por favor, verifique el estado del usuario.', true);
+                $this->entityManager->persist($notification);
+                $this->entityManager->flush();
+            } catch (\Exception $e) {
+                $this->logger->error('Error sending push notification', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->getId(),
+                ]);
+            }
         }
+    }
 
-        try {
-            $this->pushNotificationService->sendNotification($deviceToken, $title, $body);
-            $this->logger->info("Push notification sent successfully to user {$user->getId()}");
-        } catch (\Exception $e) {
-            $this->logger->error("Failed to send push notification to user {$user->getId()}", ['error' => $e->getMessage()]);
+    private function handleInactivityAlert(?array $users): void
+    {
+        foreach ($users as $user) {
+            try {
+                if (empty($user->getDeviceToken())) {
+                    $this->logger->info('User has no device token', ['user_id' => $user->getId()]);
+
+                    return;
+                }
+                $this->logger->info('Processing inactivity alert', ['user_id' => $user->getId()]);
+                $this->pushNotificationService->sendNotification(
+                    $user->getDeviceToken(),
+                    '⚠️ Alerta: Inactividad prolongada',
+                    'El usuario ha estado inactivo por un período prolongado.',
+                );
+
+                $notification = new Notification($user, 'El usuario ha estado inactivo por un período prolongado', true);
+                $this->entityManager->persist($notification);
+                $this->entityManager->flush();
+            } catch (\Exception $e) {
+                $this->logger->error('Error sending push notification', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->getId(),
+                ]);
+            }
+        }
+    }
+
+    private function handleEmergencyButton(?array $users): void
+    {
+        foreach ($users as $user) {
+            try {
+                if (empty($user->getDeviceToken())) {
+                    $this->logger->info('User has no device token', ['user_id' => $user->getId()]);
+
+                    return;
+                }
+                $this->logger->info('Processing emergency button press', ['user_id' => $user->getId()]);
+                $this->pushNotificationService->sendNotification(
+                    $user->getDeviceToken(),
+                    '🚨 Alerta: Botón de emergencia activado',
+                    'Se ha presionado el botón de emergencia. Se requiere atención inmediata.',
+                );
+
+                $notification = new Notification($user, 'Se ha presionado el botón de emergencia. Se requiere atención inmediata.', true);
+                $this->entityManager->persist($notification);
+                $this->entityManager->flush();
+            } catch (\Exception $e) {
+                $this->logger->error('Error sending push notification', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->getId(),
+                ]);
+            }
         }
     }
 }

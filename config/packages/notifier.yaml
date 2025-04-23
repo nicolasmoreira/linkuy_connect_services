@@ -1,6 +1,4 @@
 framework:
-  notifier:
-    message_bus: false
-    chatter_transports:
-    texter_transports:
-      expo: '%env(EXPO_DSN)%'
+    notifier:
+        texter_transports:
+            expo: '%env(EXPO_DSN)%'
