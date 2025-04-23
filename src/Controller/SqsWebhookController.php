@@ -40,30 +40,22 @@ final class SqsWebhookController extends AbstractController
                 return $this->json(['message' => 'Subscription confirmed']);
             }
 
-            if (!isset($data['Message'])) {
-                $this->logger->error('Missing Message field in SQS payload');
-
-                return $this->json(['message' => 'Missing Message field'], Response::HTTP_BAD_REQUEST);
-            }
-
-            $message = json_decode($data['Message'], true, 512, \JSON_THROW_ON_ERROR);
-
-            if (!isset($message['user_id'], $message['type'])) {
-                $this->logger->error('Invalid message format in SQS payload', ['message' => $message]);
+            if (!isset($data['user_id'], $data['type'])) {
+                $this->logger->error('Invalid message format in SQS payload', ['message' => $data]);
 
                 return $this->json(['message' => 'Invalid message format'], Response::HTTP_BAD_REQUEST);
             }
 
-            $user = $this->entityManager->getRepository(User::class)->find($message['user_id']);
+            $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
             if (!$user) {
-                $this->logger->error('User not found', ['user_id' => $message['user_id']]);
+                $this->logger->error('User not found', ['user_id' => $data['user_id']]);
 
                 return $this->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
             }
 
-            $activityType = ActivityType::tryFrom($message['type']);
+            $activityType = ActivityType::tryFrom($data['type']);
             if (!$activityType) {
-                $this->logger->error('Invalid activity type', ['type' => $message['type']]);
+                $this->logger->error('Invalid activity type', ['type' => $data['type']]);
 
                 return $this->json(['message' => 'Invalid activity type'], Response::HTTP_BAD_REQUEST);
             }
