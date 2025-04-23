@@ -27,8 +27,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     private string $password;
 
-    // / DEVICE_TYPE
-
     #[ORM\Column(type: 'string', enumType: UserType::class)]
     private UserType $userType;
 
@@ -52,7 +50,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = $password;
         $this->userType = $userType;
         $this->family = $family;
-        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
