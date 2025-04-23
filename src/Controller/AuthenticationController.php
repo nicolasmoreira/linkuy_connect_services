@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Trait\ApiResponseTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[OA\Tag(name: 'Authentication')]
 final class AuthenticationController extends AbstractController
@@ -113,5 +116,50 @@ final class AuthenticationController extends AbstractController
     public function checkToken(): JsonResponse
     {
         return $this->success(['message' => 'Token válido']);
+    }
+
+    #[OA\RequestBody(
+        description: 'Device token',
+        required: true,
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'device_token', type: 'string', example: 'device_token_123'),
+            ],
+        ),
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Device token added successfully',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'success'),
+                new OA\Property(property: 'message', type: 'string', example: 'Device token added successfully'),
+            ],
+        ),
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid device token',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'status', type: 'string', example: 'error'),
+                new OA\Property(property: 'message', type: 'string', example: 'Invalid device token'),
+            ],
+        ),
+    )]
+    #[Route('/api/device-token', name: 'add_device_token', methods: ['POST'])]
+    public function addDeviceToken(#[CurrentUser] User $user, Request $request): JsonResponse
+    {
+        $deviceToken = $request->request->get('device_token');
+
+        if (empty($deviceToken)) {
+            return $this->error('Invalid device token', 400);
+        }
+
+        $user->setDeviceToken($deviceToken);
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $this->success(['message' => 'Device token added successfully']);
     }
 }

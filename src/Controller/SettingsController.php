@@ -69,9 +69,9 @@ final class SettingsController extends AbstractController
         ),
     )]
     #[Route('/api/settings', name: 'get_settings', methods: ['GET'])]
-    public function getSettings(#[CurrentUser] User $user, EntityManagerInterface $em): JsonResponse
+    public function getSettings(#[CurrentUser] User $user): JsonResponse
     {
-        $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
+        $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
         if (!$settings) {
             return $this->notFound('Configuración no encontrada');
@@ -146,9 +146,9 @@ final class SettingsController extends AbstractController
         ),
     )]
     #[Route('/api/settings', name: 'update_settings', methods: ['PUT'])]
-    public function updateSettings(#[CurrentUser] User $user, Request $request, EntityManagerInterface $em): JsonResponse
+    public function updateSettings(#[CurrentUser] User $user, Request $request): JsonResponse
     {
-        $settings = $em->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
+        $settings = $this->entityManager->getRepository(Settings::class)->findOneBy(['family' => $user->getFamily()]);
 
         if (!$settings) {
             return $this->notFound('Configuración no encontrada');
@@ -200,7 +200,7 @@ final class SettingsController extends AbstractController
             }
         }
 
-        $em->flush();
+        $this->entityManager->flush();
 
         return $this->success(['message' => 'Configuración actualizada exitosamente']);
     }
