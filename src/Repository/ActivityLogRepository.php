@@ -6,7 +6,10 @@ namespace App\Repository;
 
 use App\Entity\ActivityLog;
 use App\Enum\ActivityType;
+use App\Enum\UserType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -44,5 +47,63 @@ final class ActivityLogRepository extends ServiceEntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return array<array{user_id: int, inactivity_minutes: float, family_id: int, inactivity_threshold: int}>
+     * @throws Exception
+     */
+    public function findInactiveUsers(int $defaultThreshold): array
+    {
+        $sql = <<<SQL
+                WITH last_activities AS (
+                    SELECT
+                        al.user_id,
+                        al.created_at,
+                        EXTRACT(EPOCH FROM (NOW() - al.created_at))/60 as inactivity_minutes,
+                        u.family_id,
+                        COALESCE(s.inactivity_threshold, :default_threshold) as inactivity_threshold,
+                        COALESCE(s.do_not_disturb, false) as do_not_disturb,
+                        s.do_not_disturb_start_time,
+                        s.do_not_disturb_end_time
+                    FROM activity_log al
+                    JOIN "user" u ON u.id = al.user_id
+                    LEFT JOIN settings s ON s.family_id = u.family_id
+                    WHERE u.user_type = :user_type
+                    AND u.active = true
+                    AND al.created_at = (
+                        SELECT MAX(created_at)
+                        FROM activity_log
+                        WHERE user_id = al.user_id
+                    )
+                )
+                SELECT
+                    la.user_id,
+                    la.inactivity_minutes,
+                    la.family_id,
+                    la.inactivity_threshold
+                FROM last_activities la
+                WHERE la.inactivity_minutes > la.inactivity_threshold
+                AND (
+                    la.do_not_disturb = false
+                    OR (
+                        la.do_not_disturb = true
+                        AND (
+                            la.do_not_disturb_start_time IS NULL
+                            OR la.do_not_disturb_end_time IS NULL
+                            OR NOT (
+                                CURRENT_TIME BETWEEN la.do_not_disturb_start_time AND la.do_not_disturb_end_time
+                            )
+                        )
+                    )
+                )
+            SQL;
+
+        $conn = $this->getEntityManager()->getConnection();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue('user_type', UserType::SENIOR->value);
+        $stmt->bindValue('default_threshold', $defaultThreshold, ParameterType::INTEGER);
+
+        return $stmt->executeQuery()->fetchAllAssociative();
     }
 }

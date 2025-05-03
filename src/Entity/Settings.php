@@ -13,6 +13,8 @@ class Settings
 {
     use TimestampableEntity;
 
+    public const DEFAULT_INACTIVITY_THRESHOLD = 30;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', options: ['autoincrement' => true])]
@@ -22,8 +24,8 @@ class Settings
     #[ORM\JoinColumn(nullable: false)]
     private readonly Family $family;
 
-    #[ORM\Column(type: 'smallint', options: ['default' => 30])]
-    private int $inactivityThreshold = 30;
+    #[ORM\Column(type: 'smallint', options: ['default' => self::DEFAULT_INACTIVITY_THRESHOLD])]
+    private int $inactivityThreshold = self::DEFAULT_INACTIVITY_THRESHOLD;
 
     #[ORM\Column(type: 'time', nullable: true)]
     private ?\DateTimeInterface $doNotDisturbStartTime = null;
