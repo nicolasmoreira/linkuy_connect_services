@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'activity_log', schema: 'public')]
 #[ORM\Index(name: 'idx_activity_user', columns: ['user_id'])]
 #[ORM\Index(name: 'idx_activity_type', columns: ['type'])]
+#[ORM\Index(name: 'idx_activity_user_created_at', columns: ['user_id', 'created_at'])]
 class ActivityLog
 {
     #[ORM\Id]

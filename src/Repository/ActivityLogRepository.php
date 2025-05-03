@@ -51,31 +51,28 @@ final class ActivityLogRepository extends ServiceEntityRepository
 
     /**
      * @return array<array{user_id: int, inactivity_minutes: float, family_id: int, inactivity_threshold: int}>
+     *
      * @throws Exception
      */
     public function findInactiveUsers(int $defaultThreshold): array
     {
         $sql = <<<SQL
                 WITH last_activities AS (
-                    SELECT
+                    SELECT DISTINCT ON (al.user_id)
                         al.user_id,
                         al.created_at,
-                        EXTRACT(EPOCH FROM (NOW() - al.created_at))/60 as inactivity_minutes,
+                        EXTRACT(EPOCH FROM (NOW() - al.created_at)) / 60 AS inactivity_minutes,
                         u.family_id,
-                        COALESCE(s.inactivity_threshold, :default_threshold) as inactivity_threshold,
-                        COALESCE(s.do_not_disturb, false) as do_not_disturb,
+                        COALESCE(s.inactivity_threshold, :default_threshold) AS inactivity_threshold,
+                        COALESCE(s.do_not_disturb, false) AS do_not_disturb,
                         s.do_not_disturb_start_time,
                         s.do_not_disturb_end_time
                     FROM activity_log al
                     JOIN "user" u ON u.id = al.user_id
                     LEFT JOIN settings s ON s.family_id = u.family_id
                     WHERE u.user_type = :user_type
-                    AND u.active = true
-                    AND al.created_at = (
-                        SELECT MAX(created_at)
-                        FROM activity_log
-                        WHERE user_id = al.user_id
-                    )
+                      AND u.active = true
+                    ORDER BY al.user_id, al.created_at DESC
                 )
                 SELECT
                     la.user_id,
@@ -84,19 +81,19 @@ final class ActivityLogRepository extends ServiceEntityRepository
                     la.inactivity_threshold
                 FROM last_activities la
                 WHERE la.inactivity_minutes > la.inactivity_threshold
-                AND (
-                    la.do_not_disturb = false
-                    OR (
-                        la.do_not_disturb = true
-                        AND (
-                            la.do_not_disturb_start_time IS NULL
-                            OR la.do_not_disturb_end_time IS NULL
-                            OR NOT (
-                                CURRENT_TIME BETWEEN la.do_not_disturb_start_time AND la.do_not_disturb_end_time
-                            )
-                        )
-                    )
-                )
+                  AND (
+                      la.do_not_disturb = false
+                      OR (
+                          la.do_not_disturb = true
+                          AND (
+                              la.do_not_disturb_start_time IS NULL
+                              OR la.do_not_disturb_end_time IS NULL
+                              OR NOT (
+                                  CURRENT_TIME BETWEEN la.do_not_disturb_start_time AND la.do_not_disturb_end_time
+                              )
+                          )
+                      )
+                  )
             SQL;
 
         $conn = $this->getEntityManager()->getConnection();
